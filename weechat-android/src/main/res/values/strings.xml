@@ -29,6 +29,9 @@
     <string name="dialog_copy_title">Copy</string>
     <string name="dialog_paste_title">Paste</string>
     <string name="linkify_error_no_activity">Activity not found for intent %s</string>
+    <string name="main_help_disconnected">Disconnected\nTap the kitty to connect</string>
+    <string name="main_help_connecting">Connecting…</string>
+    <string name="main_help_connected">Connected\nTap the kitty to disconnect</string>
 
     <!--  the text shown in the buffer list filter edit text as a placeholder -->
     <string name="filter_bufferlist_placeholder"><i>filter</i></string>

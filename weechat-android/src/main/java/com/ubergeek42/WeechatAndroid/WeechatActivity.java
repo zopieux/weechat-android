@@ -261,9 +261,16 @@ public class WeechatActivity extends AppCompatActivity implements
     private void adjustUI() {
         logger.debug("adjustUI()");
         int image = R.drawable.ic_big_connecting;
-        if (state.contains(STOPPED)) image = R.drawable.ic_big_disconnected;
-        else if (state.contains(AUTHENTICATED)) image = R.drawable.ic_big_connected;
+        int helpTextId = R.string.main_help_connecting;
+        if (state.contains(STOPPED)) {
+            image = R.drawable.ic_big_disconnected;
+            helpTextId = R.string.main_help_disconnected;
+        } else if (state.contains(AUTHENTICATED)) {
+            image = R.drawable.ic_big_connected;
+            helpTextId = R.string.main_help_connected;
+        }
         setInfoImage(image);
+        ((TextView)findViewById(R.id.main_help_text)).setText(helpTextId);
         setDrawerEnabled(state.contains(LISTED));
         makeMenuReflectConnectionStatus();
     }
@@ -333,6 +340,7 @@ public class WeechatActivity extends AppCompatActivity implements
         int visible = uiPager.getAdapter().getCount() == 0 ? View.VISIBLE : View.GONE;
         findViewById(R.id.kitty_background).setVisibility(visible);
         findViewById(R.id.kitty).setVisibility(visible);
+        findViewById(R.id.main_help_text).setVisibility(visible);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
