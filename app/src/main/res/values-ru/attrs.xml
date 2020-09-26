@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr format="color" name="awayNickColor"/>
+    <attr format="color" name="hotIconTextColor"/>
+
+    <attr format="color" name="kittyColor"/>
+    <attr format="color" name="kittyBalloonColor"/>
+    <attr format="color" name="toolbarIconColor"/>
+
+    <declare-styleable name="MultiSelectListPreferenceWithSummary">
+        <attr name="emptySummary" format="string|reference"/>
+    </declare-styleable>
+    <declare-styleable name="FullScreenEditTextPreference">
+        <attr name="resetToDefaultValue" format="string|reference"/>
+    </declare-styleable>
+</resources>
