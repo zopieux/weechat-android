@@ -35,6 +35,9 @@
     <string name="error__etc__cannot_share_to_empty_buffer_list">Buffer list empty</string>
     <string name="error__etc__activity_not_found_for_url">Activity not found for intent %s</string>
 
+    <string name="error__etc__cannot_navigate_input_history_if_sharespans_in_input">
+        Remove or upload media to navigate input history</string>
+
     <!-- ############################## main activity ui elements ############################## -->
 
     <string name="ui__button_paperclip">Upload file</string>
@@ -112,7 +115,7 @@
     <!-- #################################### notifications #################################### -->
     <!-- ####################################################################################### -->
 
-    <string name="notifications__channel__connection_status">Connection Status</string>
+    <string name="notifications__channel__connection_status">Connection status</string>
     <string name="notifications__channel__hotlist">Hotlist</string>
 
     <string name="notifications__main__waiting_for_network">Waiting for network</string>
@@ -176,6 +179,31 @@
     <string name="dialog__write_permission_for_camera__text">
         To take photos, app needs write access to public storage</string>
     <string name="dialog__write_permission_for_camera__button_ok">OK</string>
+
+    <string name="dialog__alarm_permission_for_ping__title">
+        Permission required</string>
+    <string name="dialog__alarm_permission_for_ping__text">
+        Pinging machinery needs the permission to set exact alarms.
+        Alternatively, you can disable pinging in connection settings.</string>
+    <string name="dialog__alarm_permission_for_ping__positive_button">Grant permission</string>
+
+    <string name="dialog__notification_permission__title">Permission wanted</string>
+    <string name="dialog__notification_permission__text">
+        To show notifications, we need a permission.
+        This is optional.
+        If you don’t enable notifications now, you can always enable them later in the settings.
+        \n
+        \nWhen connected, a persistent notification is shown.
+        To hide it from the status bar,
+        we suggest that you enable notification minimization for the category “Connection status”.
+        \n
+        \nYou can also customize notifications for individual buffers, changing sound, vibration, etc.
+        To do this, when you have received a notification for the corresponding buffer,
+        long tap it and go to settings.
+    </string>
+    <string name="dialog__notification_permission__positive_button">Grant permission</string>
+    <string name="dialog__notification_permission__negative_button">
+        Continue without granting permission</string>
 
     <!-- ####################################################################################### -->
     <!-- ################################# certificate dialogs ################################# -->
@@ -376,11 +404,11 @@
         Client certificate</string>
     <string name="pref__connection__ssl__client_certificate_summary">
         PKCS #12 file containing private key and client certificate</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_yes">
-        Certificate was stored inside security hardware</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_no">
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_yes">
+        Certificate was stored inside secure hardware</string>
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_no">
         Certificate was stored inside software key store</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_yes_cant_tell">
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_cant_tell">
         Certificate was stored inside key store</string>
     <string name="pref__CertPickerPreference__success_certificate_forgotten">
         Certificate forgotten</string>
@@ -412,11 +440,11 @@
 
     <string name="pref__connection__ssh__key">Private key</string>
     <string name="pref__connection__ssh__key_summary">Ed25519, ECDSA, RSA or DSA key</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_yes">
-        %s key was stored inside security hardware</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_no">
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_yes">
+        %s key was stored inside secure hardware</string>
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_no">
         %s key was stored inside software key store</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_cant_tell">
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_cant_tell">
         %s key was stored inside key store</string>
     <string name="pref__PrivateKeyPickerPreference__success_stored_outside_key_store">
         %1$s key was stored inside the app.
@@ -714,10 +742,16 @@
         When the paperclip button gets hidden to provide more space for the input field,
         you can still attach files via overflow menu.</string>
 
-    <string name="pref__buttons__volume_buttons_change_text_size">
-        Volume buttons change text size</string>
-    <string name="pref__buttons__volume_buttons_change_text_size_summary">
-        If set, volume buttons will change text size instead of volume</string>
+    <string name="pref__buttons__volume__title">Volume buttons</string>
+    <string-array name="pref__buttons__volume__entries">
+        <item>@string/pref__buttons__volume__actions__none</item>
+        <item>@string/pref__buttons__volume__actions__change_text_size</item>
+        <item>@string/pref__buttons__volume__actions__navigate_input_history</item>
+    </string-array>
+
+    <string name="pref__buttons__volume__actions__none">No special action</string>
+    <string name="pref__buttons__volume__actions__change_text_size">Change text size</string>
+    <string name="pref__buttons__volume__actions__navigate_input_history">Navigate input history</string>
 
     <!-- ####################################################################################### -->
     <!-- #################################### notifications #################################### -->

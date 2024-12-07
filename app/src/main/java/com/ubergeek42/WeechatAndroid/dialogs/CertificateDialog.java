@@ -25,13 +25,14 @@ import com.ubergeek42.WeechatAndroid.R;
 import com.ubergeek42.WeechatAndroid.WeechatActivity;
 import com.ubergeek42.WeechatAndroid.service.P;
 import com.ubergeek42.WeechatAndroid.service.SSLHandler;
+import com.ubergeek42.WeechatAndroid.service.SSLHandlerKt;
 import com.ubergeek42.WeechatAndroid.utils.Utils;
 import com.ubergeek42.cats.Kitty;
 import com.ubergeek42.cats.Root;
+import com.ubergeek42.weechat.HexUtilsKt;
 
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.DigestUtils;
-
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
@@ -169,8 +170,9 @@ public class CertificateDialog extends DialogFragment {
     public static CharSequence buildCertificateDescription(Context context, X509Certificate certificate) {
         String fingerprint;
         try {
-            fingerprint = new String(Hex.encodeHex(DigestUtils.sha256(certificate.getEncoded())));
-        } catch (CertificateEncodingException e) {
+            byte[] hash = MessageDigest.getInstance("SHA-256").digest(certificate.getEncoded());
+            fingerprint = HexUtilsKt.toHexStringLowercase(hash);
+        } catch (CertificateEncodingException | NoSuchAlgorithmException e) {
             fingerprint = context.getString(R.string.dialog__certificate__unknown_fingerprint);
         }
 
@@ -188,9 +190,10 @@ public class CertificateDialog extends DialogFragment {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static CertificateDialog buildUntrustedOrNotPinnedCertificateDialog(
-            Context context, X509Certificate[] certificateChain) {
+            Context context, X509Certificate[] certificateChain,
+            boolean certificateNotPinnedDialog) {
         int title, text, positive;
-        if (SSLHandler.isChainTrustedBySystem(certificateChain)) {
+        if (certificateNotPinnedDialog) {
             title = R.string.dialog__certificate__not_pinned__title;
             text = R.string.dialog__certificate__not_pinned__text;
             positive = R.string.dialog__certificate__not_pinned__pin_selected;
@@ -241,7 +244,7 @@ public class CertificateDialog extends DialogFragment {
             Context context, X509Certificate[] certificateChain) {
         CharSequence text;
         try {
-            Set<String> certificateHosts = SSLHandler.getCertificateHosts(certificateChain[0]);
+            Set<String> certificateHosts = SSLHandlerKt.getCertificateHosts(certificateChain[0]);
             StringBuilder sb = new StringBuilder();
             for (String certificateHost : certificateHosts)
                 sb.append(context.getString(

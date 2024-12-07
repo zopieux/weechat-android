@@ -13,6 +13,7 @@
 // limitations under the License.
 package com.ubergeek42.WeechatAndroid
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -44,20 +45,28 @@ import com.ubergeek42.WeechatAndroid.CutePagerTitleStrip.CutePageChangeListener
 import com.ubergeek42.WeechatAndroid.adapters.BufferListClickListener
 import com.ubergeek42.WeechatAndroid.adapters.MainPagerAdapter
 import com.ubergeek42.WeechatAndroid.databinding.WeaselBinding
-import com.ubergeek42.WeechatAndroid.dialogs.CertificateDialog
+import com.ubergeek42.WeechatAndroid.dialogs.CertificateDialog.buildExpiredCertificateDialog
+import com.ubergeek42.WeechatAndroid.dialogs.CertificateDialog.buildInvalidHostnameCertificateDialog
+import com.ubergeek42.WeechatAndroid.dialogs.CertificateDialog.buildNotYetValidCertificateDialog
+import com.ubergeek42.WeechatAndroid.dialogs.CertificateDialog.buildUntrustedOrNotPinnedCertificateDialog
 import com.ubergeek42.WeechatAndroid.dialogs.NicklistDialog
 import com.ubergeek42.WeechatAndroid.dialogs.ScrollableDialog
 import com.ubergeek42.WeechatAndroid.fragments.BufferFragment
 import com.ubergeek42.WeechatAndroid.fragments.BufferFragmentContainer
 import com.ubergeek42.WeechatAndroid.media.CachePersist
+import com.ubergeek42.WeechatAndroid.notifications.NotificationPermissionChecker
 import com.ubergeek42.WeechatAndroid.notifications.shortcuts
+import com.ubergeek42.WeechatAndroid.notifications.shouldRequestNotificationPermission
+import com.ubergeek42.WeechatAndroid.notifications.showNotificationPermissionRationaleDialog
+import com.ubergeek42.WeechatAndroid.notifications.statistics
+import com.ubergeek42.WeechatAndroid.relay.BufferList
 import com.ubergeek42.WeechatAndroid.service.Events.ExceptionEvent
 import com.ubergeek42.WeechatAndroid.service.Events.StateChangedEvent
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.service.RelayService
-import com.ubergeek42.WeechatAndroid.service.SSLHandler
-import com.ubergeek42.WeechatAndroid.notifications.statistics
-import com.ubergeek42.WeechatAndroid.relay.BufferList
+import com.ubergeek42.WeechatAndroid.service.getSystemTrustedCertificateChain
+import com.ubergeek42.WeechatAndroid.service.showAlarmPermissionRationaleDialog
+import com.ubergeek42.WeechatAndroid.service.shouldRequestExactAlarmPermission
 import com.ubergeek42.WeechatAndroid.upload.Config
 import com.ubergeek42.WeechatAndroid.upload.InsertAt
 import com.ubergeek42.WeechatAndroid.upload.ShareObject
@@ -77,6 +86,7 @@ import com.ubergeek42.WeechatAndroid.utils.isAnyOf
 import com.ubergeek42.WeechatAndroid.utils.let
 import com.ubergeek42.WeechatAndroid.utils.u
 import com.ubergeek42.WeechatAndroid.utils.ulet
+import com.ubergeek42.WeechatAndroid.utils.wasCausedBy
 import com.ubergeek42.WeechatAndroid.utils.wasCausedByEither
 import com.ubergeek42.WeechatAndroid.views.DrawerToggleFix
 import com.ubergeek42.WeechatAndroid.views.ToolbarController
@@ -88,10 +98,12 @@ import com.ubergeek42.cats.CatD
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
 import com.ubergeek42.weechat.ColorScheme
+import com.ubergeek42.weechat.SslAxolotl
 import com.ubergeek42.weechat.relay.connection.SSHServerKeyVerifier
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.security.cert.CertPathValidatorException
 import java.security.cert.CertificateException
 import java.security.cert.CertificateExpiredException
 import java.security.cert.CertificateNotYetValidException
@@ -120,6 +132,11 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         private set
 
     private val toolbarController = ToolbarController(this).apply { observeLifecycle() }
+
+    val notificationPermissionChecker = when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> NotificationPermissionChecker(this)
+        else -> null
+    }
 
     init { WeechatActivityFullScreenController(this).observeLifecycle() }
 
@@ -193,7 +210,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
 
         menuBackgroundDrawable = ContextCompat.getDrawable(this, R.drawable.bg_popup_menu)!!
 
-        if (P.isServiceAlive()) connect()
+        if (savedInstanceState == null && P.isServiceAlive()) connect()
 
         // restore buffers if we have data in the static
         // if no data and not going to connect, clear stuff
@@ -207,13 +224,25 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
 
     @MainThread @CatD(linger = true) fun connect() {
         P.loadConnectionPreferences()
-        val error = P.validateConnectionPreferences()
-        if (error != 0) {
-            Toaster.ErrorToast.show(error)
-        } else {
-            kitty.debug("proceeding!")
-            RelayService.startWithAction(this, RelayService.ACTION_START)
+
+        val errorStringId = P.validateConnectionPreferences()
+        if (errorStringId != 0) {
+            Toaster.ErrorToast.show(errorStringId)
+            return
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && shouldRequestExactAlarmPermission()) {
+            showAlarmPermissionRationaleDialog()
+            return
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && shouldRequestNotificationPermission()) {
+            showNotificationPermissionRationaleDialog()
+            return
+        }
+
+        kitty.debug("proceeding!")
+        RelayService.startWithAction(this, RelayService.ACTION_START)
     }
 
     @MainThread @CatD fun disconnect() {
@@ -319,18 +348,41 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         var fragmentMaker: (() -> DialogFragment)? = null
 
         if (event.e.wasCausedByEither<SSLPeerUnverifiedException, CertificateException>()) {
-            val hostValidityCheckResult = SSLHandler.checkHostnameAndValidity(P.host, P.port)
-            val certificateChain = hostValidityCheckResult.certificateChain
-            if (!certificateChain.isNullOrEmpty()) {
-                fragmentMaker = when (hostValidityCheckResult.exception) {
-                    is CertificateExpiredException -> {{ CertificateDialog
-                            .buildExpiredCertificateDialog(this, certificateChain) }}
-                    is CertificateNotYetValidException -> {{ CertificateDialog
-                            .buildNotYetValidCertificateDialog(this, certificateChain) }}
-                    is SSLPeerUnverifiedException -> {{ CertificateDialog
-                            .buildInvalidHostnameCertificateDialog(this, certificateChain) }}
-                    null -> {{ CertificateDialog
-                            .buildUntrustedOrNotPinnedCertificateDialog(this, certificateChain) }}
+            val exceptionWrapper = event.e.findCause<SslAxolotl.ExceptionWrapper>()
+            val lastServerOfferedCertificateChain = exceptionWrapper?.lastServerOfferedCertificateChain
+            val lastAuthType = exceptionWrapper?.lastAuthType
+
+            val (certificateChainTrustedBySystem, certificateChainForDisplay) =
+                if (lastServerOfferedCertificateChain != null && lastAuthType != null) {
+                    try {
+                        true to getSystemTrustedCertificateChain(
+                                lastServerOfferedCertificateChain, lastAuthType, P.host)
+                    } catch (e: Exception) {
+                        false to lastServerOfferedCertificateChain
+                    }
+                } else {
+                    false to null
+                }
+
+            if (!certificateChainForDisplay.isNullOrEmpty()) {
+                fragmentMaker = when {
+                    event.e.wasCausedBy<CertificateExpiredException>() -> {
+                        { buildExpiredCertificateDialog(this,
+                                certificateChainForDisplay) }
+                    }
+                    event.e.wasCausedBy<CertificateNotYetValidException>() -> {
+                        { buildNotYetValidCertificateDialog(this,
+                                certificateChainForDisplay) }
+                    }
+                    event.e.wasCausedBy<SSLPeerUnverifiedException>() -> {
+                        { buildInvalidHostnameCertificateDialog(this,
+                                certificateChainForDisplay) }
+                    }
+                    event.e.wasCausedBy<CertPathValidatorException>() -> {
+                        { buildUntrustedOrNotPinnedCertificateDialog(this,
+                                certificateChainForDisplay,
+                                certificateChainTrustedBySystem) }
+                    }
                     else -> null
                 }
             }
@@ -433,7 +485,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
     @MainThread @Cat("Menu") override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_actionbar, menu)
 
-        val menuHotlist = menu.findItem(R.id.menu_hotlist).actionView
+        val menuHotlist = menu.findItem(R.id.menu_hotlist).actionView!!
         uiHot = menuHotlist.findViewById(R.id.hotlist_hot)
 
         // set color of the border around the [2] badge on the bell, as well as text color
@@ -519,7 +571,7 @@ class WeechatActivity : AppCompatActivity(), CutePageChangeListener,
         })
         menu.findItem(R.id.menu_connection_state).title = connectionStateTitle
 
-        val menuHotlist = menu.findItem(R.id.menu_hotlist).actionView
+        val menuHotlist = menu.findItem(R.id.menu_hotlist).actionView!!
         val bellImage = menuHotlist.findViewById<ImageView>(R.id.hotlist_bell)
         bellImage.setImageResource(if (P.optimizeTraffic) R.drawable.ic_toolbar_bell_cracked else R.drawable.ic_toolbar_bell)
     }
