@@ -31,6 +31,9 @@
     <string name="error__etc__cannot_share_to_empty_buffer_list">Список буферов пуст</string>
     <string name="error__etc__activity_not_found_for_url">Не найдена Activity для Intent-а %s</string>
 
+    <string name="error__etc__cannot_navigate_input_history_if_sharespans_in_input">
+        Удалите или загрузите медиа, чтобы осущеставить навигацию по истории ввода</string>
+
     <!-- ############################## main activity ui elements ############################## -->
 
     <string name="ui__button_paperclip">Загрузить</string>
@@ -175,6 +178,32 @@
     <string name="dialog__write_permission_for_camera__text">
         Чтобы сделать фото, приложению требуется разрешение на запись в хранилище</string>
     <string name="dialog__write_permission_for_camera__button_ok">Хорошо</string>
+
+    <string name="dialog__alarm_permission_for_ping__title">
+        Необходимо разрешение</string>
+    <string name="dialog__alarm_permission_for_ping__text">
+        Для пинга требуется разрешение на планирование запуска действий в точное время.
+        Альтернативно, вы можете выключить пинг в настройках подключения.</string>
+    <string name="dialog__alarm_permission_for_ping__positive_button">Дать разрешение</string>
+
+    <string name="dialog__notification_permission__title">Необходимо разрешение</string>
+    <string name="dialog__notification_permission__text">
+        Чтобы показывать уведомления, приложению требуется разрешение.
+        Это необязательно.
+        Если вы не дадите разрешение сейчас,
+        вы всегда сможете дать его позже в настройках приложения.
+        \n
+        \nПри подключении отображается постоянное уведомление.
+        Чтобы скрыть его значок из строки состояния,
+        рекомендуем включить сворачиваение уведомлений для категории «Статус соединения».
+        \n
+        \nТакже вы можете настроить уведомления для отдельных буферов, изменяя звук, вибрацию и прочее.
+        Для этого, получив уведомление от соответствующего буфера,
+        выполните долгое нажатие на это уведомление и перейдите в настройки.
+    </string>
+    <string name="dialog__notification_permission__positive_button">Дать разрешение</string>
+    <string name="dialog__notification_permission__negative_button">
+        Продолжить, не дав разрешение</string>
 
     <!-- ####################################################################################### -->
     <!-- ################################# certificate dialogs ################################# -->
@@ -372,11 +401,11 @@
         Клиентский сертификат</string>
     <string name="pref__connection__ssl__client_certificate_summary">
         Закрытый ключ и сертификат пользователя в формате PKCS #12</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_yes">
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_yes">
         Сертификат помещён в аппаратное хранилище</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_no">
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_no">
         Сертификат помещён в программное хранилище</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_yes_cant_tell">
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_cant_tell">
         Сертификат помещён в хранилище</string>
     <string name="pref__CertPickerPreference__success_certificate_forgotten">
         Сертификат забыт</string>
@@ -409,11 +438,11 @@
 
     <string name="pref__connection__ssh__key">Ключ</string>
     <string name="pref__connection__ssh__key_summary">Ключ Ed25519, ECDSA, RSA или DSA</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_yes">
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_yes">
         Ключ %s помещён в аппаратное хранилище</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_no">
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_no">
         Ключ %s помещён в программное хранилище</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_cant_tell">
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_cant_tell">
         Ключ %s помещён в хранилище</string>
     <string name="pref__PrivateKeyPickerPreference__success_stored_outside_key_store">
         Ключ %1$s помещён в настройки приложения.
@@ -510,6 +539,11 @@
         если включена фильтрация.
         Ввиду ограничений протокола приложение каждый раз запрашивает все строки.</string>
 
+    <string name="pref__connection__synchronization__handle_buffer_line_data_changed">
+        Отображать изменения строк</string>
+    <string name="pref__connection__synchronization__handle_buffer_line_data_changed_summary">
+        В редких случаях отображение изменений строк может приводить к дёрганой анимации</string>
+
     <!-- ############################## connection: miscellaneous ############################## -->
 
     <string name="pref__connection__misc_group">Всякая всячина</string>
@@ -546,10 +580,13 @@
 
     <string name="pref__buffer_list_group">Список буферов</string>
 
-    <string name="pref__buffer_list__sort_by_hot">
+    <string name="pref__buffer_list__sort_buffer_list">
         Сортировать список буферов</string>
-    <string name="pref__buffer_list__sort_by_hot_summary">
-        Сортировать по количество упоминаний и новых сообщений в приватных буферах</string>
+    <string-array name="pref__buffer_list__sort_buffer_list_names">
+        <item>По номеру</item>
+        <item>По горячим сообщениям, затем по номеру</item>
+        <item>По горячим сообщениям, затем по другим сообщениям, затем по номеру</item>
+    </string-array>
 
     <string name="pref__buffer_list__hide_server_buffers">
         Скрывать буферы без людей</string>
@@ -699,10 +736,10 @@
         Когда кнопка «Скрепка» скрыта, чтобы оставить больше места для поля ввода,
         выбирать файлы можно через меню.</string>
 
-    <string name="pref__buttons__volume_buttons_change_text_size">
-        Кнопки громкости меняют размер текста</string>
-    <string name="pref__buttons__volume_buttons_change_text_size_summary">
-        Если настройка включена, кнопки громкости будут менять размер текста вместо громкости</string>
+    <string name="pref__buttons__volume__title">Кнопки громкости</string>
+    <string name="pref__buttons__volume__actions__none">Меняют громкость</string>
+    <string name="pref__buttons__volume__actions__change_text_size">Меняют размер текста</string>
+    <string name="pref__buttons__volume__actions__navigate_input_history">Осуществляют навигацию по истории ввода</string>
 
     <!-- ####################################################################################### -->
     <!-- #################################### notifications #################################### -->

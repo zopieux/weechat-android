@@ -33,6 +33,9 @@
     <string name="error__etc__cannot_share_to_empty_buffer_list">Bufferliste leer</string>
     <string name="error__etc__activity_not_found_for_url">Keine Aktivität gefunden für %s</string>
 
+    <string name="error__etc__cannot_navigate_input_history_if_sharespans_in_input">
+        Entfernen oder laden Sie Medien hoch, um durch den Eingabeverlauf zu navigieren</string>
+
     <!-- ############################## main activity ui elements ############################## -->
 
     <string name="ui__button_paperclip">Datei hochladen</string>
@@ -172,6 +175,32 @@
     <string name="dialog__write_permission_for_camera__text">
         Um Fotos zu erstellen, benötigt die App Schreibzugriff auf den öffentlichen Speicher</string>
     <string name="dialog__write_permission_for_camera__button_ok">Ok</string>
+
+    <string name="dialog__alarm_permission_for_ping__title">
+        Erlaubnis erforderlich</string>
+    <string name="dialog__alarm_permission_for_ping__text">
+        Maschine pingen, benötigt die Erlaubnis, genaue Alarme zu setzen.
+        Alternativ können man den Ping in den Verbindungseinstellungen deaktivieren.</string>
+    <string name="dialog__alarm_permission_for_ping__positive_button">Erlaubnis erteilen</string>
+
+    <string name="dialog__notification_permission__title">Erlaubnis erwünscht</string>
+    <string name="dialog__notification_permission__text">
+        Um Benachrichtigungen anzuzeigen, benötigen wir eine Erlaubnis.
+        Dies ist optional.
+        Wenn Sie Benachrichtigungen jetzt nicht aktivieren,
+        können Sie diese jederzeit nachträglich in den Einstellungen aktivieren.
+        \n
+        \nWenn eine Verbindung besteht, wird eine dauerhafte Benachrichtigung angezeigt.
+        Um es aus der Statusleiste auszublenden, wird empfohlen,
+        die Benachrichtigungsminimierung für die Kategorie „Verbindungsstatus“ zu aktivieren.
+        \n
+        \nEs können Benachrichtigungen, z.B. Ton, Vibration usw. auch für einzelne Buffer angepasst werden.
+        Wenn mindestens eine Benachrichtigung für den entsprechenden Buffer erhalten wurde,
+        muss man lange auf die Benachrichtigung tippen, um zu den Einstellungen zu gelangen.
+    </string>
+    <string name="dialog__notification_permission__positive_button">Erlaubnis erteilen</string>
+    <string name="dialog__notification_permission__negative_button">
+        Fortfahren, ohne Erlaubnis zu erteilen</string>
 
     <!-- ####################################################################################### -->
     <!-- ################################# certificate dialogs ################################# -->
@@ -372,11 +401,11 @@
         Client-Zertifikate</string>
     <string name="pref__connection__ssl__client_certificate_summary">
         PKCS # 12-Datei enthält privaten Schlüssel und Client-Zertifikat</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_yes">
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_yes">
         Das Zertifikat wurde in einer Sicherheitshardware gespeichert</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_no">
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_no">
         Das Zertifikat wurde im Software-Schlüsselspeicher gespeichert</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_yes_cant_tell">
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_cant_tell">
         Das Zertifikat wurde im Schlüsselspeicher gespeichert</string>
     <string name="pref__CertPickerPreference__success_certificate_forgotten">
         Zertifikat vergessen</string>
@@ -408,11 +437,11 @@
 
     <string name="pref__connection__ssh__key">Privater Schlüssel</string>
     <string name="pref__connection__ssh__key_summary">Ed25519, ECDSA, RSA, DSA Schlüssel</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_yes">
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_yes">
         Der %s Schlüssel wurde in der Sicherheitshardware gespeichert</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_no">
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_no">
         Der %s Schlüssel wurde im Software-Schlüsselspeicher gespeichert</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_cant_tell">
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_cant_tell">
         %s Schlüssel wurde im Schlüsselspeicher gespeichert</string>
     <string name="pref__PrivateKeyPickerPreference__success_stored_outside_key_store">
         %1$s Schlüssel wurde in der App gespeichert.
@@ -511,6 +540,11 @@
         Beachten Sie außerdem, dass die App aufgrund der Einschränkungen von WeeChat
         jedes Mal, wenn mehr Zeilen angefordert werden, alle Zeilen erneut abrufen muss.</string>
 
+    <string name="pref__connection__synchronization__handle_buffer_line_data_changed">
+        Behandeln von Zeilenänderungen</string>
+    <string name="pref__connection__synchronization__handle_buffer_line_data_changed_summary">
+        In seltenen Fällen kann die Anzeige von Zeilenänderungen zu ruckelnden Animationen führen</string>
+
     <!-- ############################## connection: miscellaneous ############################## -->
 
     <string name="pref__connection__misc_group">Sonstiges</string>
@@ -546,12 +580,15 @@
     <!-- ##################################### buffer list ##################################### -->
     <!-- ####################################################################################### -->
 
-    <string name="pref__buffer_list_group">Buffer-Liste</string>
+    <string name="pref__buffer_list_group">Bufferliste</string>
 
-    <string name="pref__buffer_list__sort_by_hot">
-        Liste der Buffer sortieren</string>
-    <string name="pref__buffer_list__sort_by_hot_summary">
-        Sortierung nach Anzahl der Highlights/privaten Nachrichten/ungelesenen Nachrichten</string>
+    <string name="pref__buffer_list__sort_buffer_list">
+        Sortiere Bufferliste</string>
+    <string-array name="pref__buffer_list__sort_buffer_list_names">
+        <item>Nach Nummer</item>
+        <item>Nach Highlight, dann nach Nummer</item>
+        <item>Nach Highlight, dann nach anderen Nachrichten, dann nach Nummer</item>
+    </string-array>
 
     <string name="pref__buffer_list__hide_server_buffers">
         Ausblenden von Buffern in denen man nicht schreibt</string>
@@ -703,11 +740,10 @@
         wenn der Büroklammer-Taste versteckt wurde,
         um mehr Platz für das Eingabefeld zu schaffen.</string>
 
-    <string name="pref__buttons__volume_buttons_change_text_size">
-        Lautstärketasten ändern die Textgröße</string>
-    <string name="pref__buttons__volume_buttons_change_text_size_summary">
-        Wenn diese Option aktiviert ist,
-        ändern die Lautstärketasten die Textgröße, anstelle der Lautstärke</string>
+    <string name="pref__buttons__volume__title">Lautstärketasten</string>
+    <string name="pref__buttons__volume__actions__none">Nichts tun</string>
+    <string name="pref__buttons__volume__actions__change_text_size">Lautstärketasten ändern die Textgröße</string>
+    <string name="pref__buttons__volume__actions__navigate_input_history">Navigieren Sie durch den Eingabeverlauf</string>
 
     <!-- ####################################################################################### -->
     <!-- #################################### notifications #################################### -->

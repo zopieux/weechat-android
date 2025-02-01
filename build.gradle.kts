@@ -1,3 +1,5 @@
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+
 subprojects {
     repositories {
         mavenCentral()
@@ -5,12 +7,6 @@ subprojects {
         maven { url = uri("https://jitpack.io") }
     }
 }
-
-// to print a sensible task graph, uncomment the following lines and run:
-//   $ gradlew :app:assembleDebug taskTree --no-repeat
-// plugins {
-//     id("com.dorongold.task-tree") version "1.5"
-// }
 
 defaultTasks("assembleDebug")
 
@@ -22,19 +18,15 @@ buildscript {
     repositories {
         mavenCentral()
         google()
-        maven { url = uri("https://storage.googleapis.com/r8-releases/raw") }
+        maven("https://plugins.gradle.org/m2/")
     }
 
     dependencies {
-        // this is and the r8 repo above are needed to fix a bug in agp 4.2.0/1
-        // see https://issuetracker.google.com/issues/187265955
-        // todo remove when the issue has been resolved
-        classpath("com.android.tools:r8:2.2.67")
-
-        classpath("com.android.tools.build:gradle:4.2.1")
-        classpath("org.aspectj:aspectjtools:1.9.7.M3")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.10")
-        classpath("org.jetbrains.kotlin:kotlin-serialization:1.5.10")
+        classpath(libs.gradle)
+        classpath(libs.aspectj.tools)
+        classpath(libs.kotlin.gradle.plugin)
+        classpath(libs.kotlin.serialization)
+        classpath(libs.aspectjpipeline)
     }
 }
 
@@ -70,5 +62,30 @@ subprojects {
                 }
             })
         }
+    }
+}
+
+plugins {
+    // The below is a plugin that checks for dependency updates.
+    // To get a plain text report, run:
+    //   $ ./gradlew dependencyUpdates
+    // See https://github.com/ben-manes/gradle-versions-plugin
+    alias(libs.plugins.gradleversionsplugin)
+
+    // to print a sensible task graph, uncomment the following line and run:
+    //   $ gradlew :app:assembleDebug taskTree --no-repeat
+    //alias(libs.plugins.tasktree)
+}
+
+fun isNonStable(version: String): Boolean {
+    val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
+    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
+    val isStable = stableKeyword || regex.matches(version)
+    return isStable.not()
+}
+
+tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
+    rejectVersionIf {
+        isNonStable(candidate.version) && !isNonStable(currentVersion)
     }
 }

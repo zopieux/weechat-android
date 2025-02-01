@@ -17,7 +17,6 @@ import com.ubergeek42.WeechatAndroid.utils.updatable
 import com.ubergeek42.cats.Cat
 import com.ubergeek42.cats.Kitty
 import com.ubergeek42.cats.Root
-import java.util.*
 
 class Buffer @WorkerThread constructor(
     @JvmField val pointer: Long,
@@ -198,8 +197,8 @@ class Buffer @WorkerThread constructor(
     @MainThread @Synchronized fun moveReadMarkerToEnd() {
         lines.moveReadMarkerToEnd()
         if (P.hotlistSync) Events.SendMessageEvent.fire(
-                "input 0x%1${"$"}x /buffer set hotlist -1\n" +
-                "input 0x%1${"$"}x /input set_unread_current_buffer", pointer)
+                "input ${pointer.as0x} /buffer set hotlist -1\n" +
+                "input ${pointer.as0x} /input set_unread_current_buffer")
     }
 
     val hotCount: Int
@@ -209,7 +208,7 @@ class Buffer @WorkerThread constructor(
     /////////////////////////////////////////////////////////////// stuff called by message handlers
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    @WorkerThread @Synchronized fun replaceLines(newLines: Collection<Line>) {
+    @WorkerThread fun replaceLines(newLines: Collection<Line>) {
         if (isOpen) {
             newLines.forEach { it.ensureSpannable() }
         }
@@ -218,6 +217,14 @@ class Buffer @WorkerThread constructor(
             lines.replaceLines(newLines)
         }
    }
+
+    @WorkerThread fun replaceLine(line: Line) {
+        if (isOpen) line.ensureSpannable()
+
+        synchronized(this) {
+            lines.replaceLine(line)
+        }
+    }
 
     @WorkerThread fun addLineBottom(line: Line) {
         if (isOpen) line.ensureSpannable()
@@ -366,6 +373,17 @@ class Buffer @WorkerThread constructor(
         bufferEyes.forEach { it.onLinesListed() }
     }
 
+    @WorkerThread fun onLinesCleared() {
+        synchronized(this) {
+            lines = Lines().apply {
+                status = Lines.Status.EverythingFetched
+                title = lines.title
+            }
+            resetUnreadsAndHighlights()
+        }
+        bufferEyes.forEach { it.onLinesListed() }
+    }
+
     @WorkerThread fun onBufferClosed() {
         synchronized(this) {
             unreads = 0
@@ -425,7 +443,7 @@ class Buffer @WorkerThread constructor(
 
     @WorkerThread @Synchronized fun onNicksListed(newNicks: Collection<Nick>) {
         nicks.replaceNicks(newNicks)
-        nicks.sortNicksByLines(lines.descendingFilteredIterator)
+        nicks.sortNicksByNamesThatSpokeLast(lines.namesThatSpokeLast)
     }
 
     @WorkerThread private fun notifyNicklistChanged() {

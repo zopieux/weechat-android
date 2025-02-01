@@ -32,6 +32,9 @@
     <string name="error__etc__cannot_share_to_empty_buffer_list">Aucun tampon disponible pour partager</string>
     <string name="error__etc__activity_not_found_for_url">Activité introuvable pour “l’intent” %s</string>
 
+    <string name="error__etc__cannot_navigate_input_history_if_sharespans_in_input">
+        Supprimez ou envoyez les fichiers pour parcourir l’historique des entrées</string>
+
     <!-- ############################## main activity ui elements ############################## -->
 
     <string name="ui__button_paperclip">Téléverser un fichier</string>
@@ -170,6 +173,33 @@
     <string name="dialog__write_permission_for_camera__text">
         Pour prendre des photos, l’application a besoin d’un accès en écriture au stockage</string>
     <string name="dialog__write_permission_for_camera__button_ok">OK</string>
+
+    <string name="dialog__alarm_permission_for_ping__title">
+        Demande d’autorisation</string>
+    <string name="dialog__alarm_permission_for_ping__text">
+        Le mécanisme de pings a besoin de l’autorisation de programmer des alarmes exactes.
+        Si vous préférez, vous pouvez désactiver les pings dans les paramètres de connexion.</string>
+    <string name="dialog__alarm_permission_for_ping__positive_button">Donner l’autorisation</string>
+
+    <string name="dialog__notification_permission__title">Demande d’autorisation</string>
+    <string name="dialog__notification_permission__text">
+        Pour pouvoir afficher des notifications,
+        Weechat-Android a besoin d’une autorisation optionnelle.
+        Vous pouvez refuser maintenant et réactiver les notifications
+        à tout moment en allant dans les paramètres.
+        \n
+        \nUne notification restera affichée aussi longtemps que la connexion perdure.
+        Pour la masquer de la barre d’état, nous vous suggérons d’activer
+        l’option de réduire les notifications pour la catégorie «&#8239;État de la connexion&#8239;».
+        \n
+        \nVous pouvez également personnaliser les notifications pour des tampons individuels,
+        modifier le son, les vibrations, etc.
+        Pour ce faire, lorsque vous avez reçu au moins une notification pour le tampon correspondant,
+        appuyez longuement dessus et accédez aux paramètres.
+    </string>
+    <string name="dialog__notification_permission__positive_button">Donner l’autorisation</string>
+    <string name="dialog__notification_permission__negative_button">
+        Continuer sans donner l’autorisation</string>
 
     <!-- ####################################################################################### -->
     <!-- ################################# certificate dialogs ################################# -->
@@ -369,11 +399,11 @@
         Certificat client</string>
     <string name="pref__connection__ssl__client_certificate_summary">
         Fichier PKCS #12 contenant clés privées et certificat client</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_yes">
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_yes">
         Le certificat a été sauvegardée dans le stockage sécurisé matériel</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_no">
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_no">
         Le certificat a été sauvegardé dans le porte-clé logiciel</string>
-    <string name="pref__CertPickerPreference__success_stored_inside_security_hardware_yes_cant_tell">
+    <string name="pref__CertPickerPreference__success_stored_inside_secure_hardware_cant_tell">
         Le certificat a été sauvegardé dans le porte-clé</string>
     <string name="pref__CertPickerPreference__success_certificate_forgotten">
         Certificat supprimé</string>
@@ -405,11 +435,11 @@
 
     <string name="pref__connection__ssh__key">Clé privée</string>
     <string name="pref__connection__ssh__key_summary">Clé Ed25519, ECDSA, RSA ou DSA</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_yes">
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_yes">
         La clé %s a été sauvegardée dans un stockage sécurisé matériel</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_no">
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_no">
         La clé %s a été sauvegardée dans le porte-clé logiciel</string>
-    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_security_hardware_cant_tell">
+    <string name="pref__PrivateKeyPickerPreference__success_stored_inside_secure_hardware_cant_tell">
         La clé %s a été sauvegardée dans le porte-clé</string>
     <string name="pref__PrivateKeyPickerPreference__success_stored_outside_key_store">
         La clé %1$s a été sauvegardée dans l’app.
@@ -506,6 +536,11 @@
         Notez également qu’en raison des limitations de WeeChat,
         l’application doit récupérer toutes les (anciennes) lignes chaque fois qu’elle demande de nouvelles lignes.</string>
 
+    <string name="pref__connection__synchronization__handle_buffer_line_data_changed">
+        Gérer les changement de lignes</string>
+    <string name="pref__connection__synchronization__handle_buffer_line_data_changed_summary">
+        Il est possible que cela entraîne occasionnellement des animations saccadées</string>
+
     <!-- ############################## connection: miscellaneous ############################## -->
 
     <string name="pref__connection__misc_group">Divers</string>
@@ -539,10 +574,13 @@
 
     <string name="pref__buffer_list_group">Liste des tampons</string>
 
-    <string name="pref__buffer_list__sort_by_hot">
-        Trier la liste des tampons</string>
-    <string name="pref__buffer_list__sort_by_hot_summary">
-        Trier par le nombre de messages notables/messages privés/messages non lus</string>
+    <string name="pref__buffer_list__sort_buffer_list">
+        Trier les tampons</string>
+    <string-array name="pref__buffer_list__sort_buffer_list_names">
+        <item>Par numéro</item>
+        <item>Par messages notables, puis par numéro</item>
+        <item>Par messages notables, puis par messages, puis par numéro</item>
+    </string-array>
 
     <string name="pref__buffer_list__hide_server_buffers">
         Cacher les tampons hors salons</string>
@@ -691,11 +729,10 @@
         Quand le bouton «&#8239;trombone&#8239;» devient invisible pour laisser de la place au champ de saisie,
         il reste possible de joindre des fichiers via le menu déroulant.</string>
 
-    <string name="pref__buttons__volume_buttons_change_text_size">
-        Taille du texte via le volume</string>
-    <string name="pref__buttons__volume_buttons_change_text_size_summary">
-        Si coché, les boutons du volume audio changent la taille du texte
-        lorsque Weechat-Android est au premier plan</string>
+    <string name="pref__buttons__volume__title">Les boutons de volume</string>
+    <string name="pref__buttons__volume__actions__none">Ne font rien de spécial</string>
+    <string name="pref__buttons__volume__actions__change_text_size">Changent la taille du texte</string>
+    <string name="pref__buttons__volume__actions__navigate_input_history">Naviguent dans l’historique de saisie</string>
 
     <!-- ####################################################################################### -->
     <!-- #################################### notifications #################################### -->

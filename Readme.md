@@ -32,6 +32,34 @@ Pull requests are welcome—but please check with us on IRC before starting a su
 
 ### Changelog
 
+##### v1.10
+* Added an option to not move hot buffers to the top of the buffer list
+* Handle relay events `_buffer_cleared` and `_buffer_line_data_changed`
+* Updated the default media preview strategies
+* A few minor bug fixes and improvements
+
+##### v1.9
+* Drag and drop files on buffers to share
+* Volume keys can now navigate input history
+* Fixed strange behavior resulting from handling WeeChat pointers as signed numbers
+* Fixed importing of PKCS #8 Ed25519 keys
+* Target Android API 34, ask for notification & exact alarm permissions where applicable
+* A few minor bug fixes and improvements
+
+##### v1.8.1
+* Fixed an issue with ED25519 keys during upgrade
+* Update Android Gradle Plugin to fix build on F-Droid
+* Rework ping logic to comply with Google Play requirements
+
+##### v1.8
+* Render the latest emoji on older systems
+* Certificate dialog now shows trusted chain if available
+* Fixed not being able to connect to servers that require SNI
+* Fixed cleartext web traffic not going through
+* Fixed wrong message shown in case of TLS error
+* Fixed a crash if an URL with the ellipsis character is encountered
+* Fixed a very rare inconsistent Bubble behavior
+
 ##### v1.7.1
 * Fixed an issue of disappearing bubbles
 

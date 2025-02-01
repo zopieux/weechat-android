@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.ubergeek42.WeechatAndroid">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-sdk tools:overrideLibrary="android.support.v14.preference" />
 
-    <permission
-        android:name="${applicationId}.permission.PING_ACTION"
-        android:protectionLevel="signature" />
-
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
@@ -17,7 +13,7 @@
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="${applicationId}.permission.PING_ACTION"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
@@ -35,10 +31,13 @@
         android:icon="@mipmap/ic_launcher_kitty"
         android:label="@string/etc__application_name"
         android:theme="@style/Weechat"
+        android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true"
         android:windowSoftInputMode="adjustResize">
 
-        <service android:name=".service.RelayService" />
+        <service
+            android:name=".service.RelayService"
+            android:foregroundServiceType="remoteMessaging" />
 
         <activity
             android:name=".WeechatActivity"
@@ -158,6 +157,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".service.PingBroadcastReceiver" />
         <receiver android:name=".service.SyncAlarmReceiver" />
         <receiver android:name=".notifications.InlineReplyReceiver" />
         <receiver android:name=".notifications.NotificationDismissedReceiver" />
@@ -171,6 +171,16 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
+        </provider>
+
+        <!-- See https://developer.android.com/develop/ui/views/text-and-emoji/emoji2#optional-features -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data android:name="androidx.emoji2.text.EmojiCompatInitializer"
+                tools:node="remove" />
         </provider>
     </application>
 </manifest>

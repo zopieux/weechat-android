@@ -61,8 +61,6 @@ object BufferList {
         return buffers.firstOrNull { it.pointer == pointer }
     }
 
-    val totalHotMessageCount get() = buffers.sumOf { it.hotCount }
-
     /////////////////////////////////////////////////////////////////////////////////////// handlers
 
     private val handlers = ConcurrentHashMap<String, HdataHandler>()
@@ -384,6 +382,24 @@ object BufferList {
                 findByPointer(spec.bufferPointer)?.let { buffer ->
                     buffer.addLineBottom(spec.toLine())
                     buffer.onLineAdded()
+                }
+            }
+        }
+
+        add("_buffer_cleared") { obj, _ ->
+            obj.forEachExistingBuffer { _, buffer ->
+                buffer.onLinesCleared()
+            }
+        }
+
+        add("_buffer_line_data_changed") { obj, _ ->
+            if (!P.handleBufferLineDataChanged) return@add
+
+            obj.forEach { entry ->
+                val spec = LineSpec(entry)
+                findByPointer(spec.bufferPointer)?.let { buffer ->
+                    buffer.replaceLine(spec.toLine())
+                    buffer.onLinesListed()
                 }
             }
         }

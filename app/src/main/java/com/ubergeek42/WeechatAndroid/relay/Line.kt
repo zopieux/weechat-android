@@ -15,12 +15,13 @@ import androidx.annotation.AnyThread
 import com.ubergeek42.WeechatAndroid.service.P
 import com.ubergeek42.WeechatAndroid.upload.i
 import com.ubergeek42.WeechatAndroid.utils.Linkify.linkify
+import com.ubergeek42.WeechatAndroid.utils.SHOULD_EMOJIFY
+import com.ubergeek42.WeechatAndroid.utils.emojify
 import com.ubergeek42.weechat.Color
 import com.ubergeek42.weechat.ColorScheme
-import java.lang.Long.toHexString
 
 
-open class Line constructor(
+open class Line(
     @JvmField val pointer: Long,
     @JvmField val type: LineSpec.Type,
     @JvmField val timestamp: Long,
@@ -62,6 +63,8 @@ open class Line constructor(
 
         linkify(spannable, color.messageString)
 
+        if (SHOULD_EMOJIFY) emojify(spannable)
+
         _prefixString = color.prefixString
         _messageString = color.messageString
         _spannable = spannable
@@ -100,5 +103,13 @@ open class Line constructor(
     val timestampedIrcLikeString: String get() =
             timestampString?.let { timestamp -> "$timestamp $ircLikeString" } ?: ircLikeString
 
-    override fun toString() = "Line(0x${toHexString(pointer)}: $ircLikeString)"
+    fun visuallyEqualsTo(other: Line) =
+        type == other.type &&
+        timestamp == other.timestamp &&
+        rawPrefix == other.rawPrefix &&
+        rawMessage == other.rawMessage &&
+        isHighlighted == other.isHighlighted &&
+        displayAs == other.displayAs
+
+    override fun toString() = "Line(${pointer.as0x}): $ircLikeString)"
 }

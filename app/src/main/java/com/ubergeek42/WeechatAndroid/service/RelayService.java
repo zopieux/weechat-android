@@ -67,7 +67,7 @@ public class RelayService extends Service implements IObserver {
     private static int iteration = -1;
 
     volatile public RelayConnection connection;
-    private PingActionReceiver ping;
+    private PingingPenguin pingingPenguin;
     private Handler doge;               // thread "doge" used for connecting/disconnecting
 
     // action is one of ACTION_START or ACTION_STOP
@@ -103,7 +103,7 @@ public class RelayService extends Service implements IObserver {
             if (P.reconnect && state.contains(STATE.STARTED)) _start();
         });
 
-        ping = new PingActionReceiver(this);
+        pingingPenguin = new PingingPenguin(this);
         EventBus.getDefault().register(this);
     }
 
@@ -206,7 +206,7 @@ public class RelayService extends Service implements IObserver {
         P.setServiceAlive(false);
     }
 
-    // called by ↑ and PingActionReceiver
+    // called by ↑ and PingingPenguin
     // close whatever connection we have in a thread, may result in a call to onStateChanged
     @AnyThread @Cat synchronized void interrupt() {
         doge.removeCallbacksAndMessages(null);
@@ -232,12 +232,23 @@ public class RelayService extends Service implements IObserver {
         IConnection conn;
         try {
             switch (P.connectionType) {
-                case PREF_TYPE_SSH: conn = new SSHConnection(P.host, P.port, P.sshHost, P.sshPort, P.sshUser,
-                        P.sshAuthenticationMethod, P.sshPassword, P.sshSerializedKey, P.sshServerKeyVerifier); break;
-                case PREF_TYPE_SSL: conn = new SimpleConnection(P.host, P.port, P.sslSocketFactory, SSLHandler.getHostnameVerifier()); break;
-                case PREF_TYPE_WEBSOCKET: conn = new WebSocketConnection(P.host, P.port, P.wsPath, null, null); break;
-                case PREF_TYPE_WEBSOCKET_SSL: conn = new WebSocketConnection(P.host, P.port, P.wsPath, P.sslSocketFactory, SSLHandler.getHostnameVerifier()); break;
-                default: conn = new SimpleConnection(P.host, P.port, null, null); break;
+                case PREF_TYPE_SSH: conn = new SSHConnection(
+                        P.host, P.port, P.sshHost, P.sshPort, P.sshUser,
+                        P.sshAuthenticationMethod, P.sshPassword, P.sshSerializedKey,
+                        P.sshServerKeyVerifier
+                ); break;
+                case PREF_TYPE_SSL: conn = new SimpleConnection(
+                        P.host, P.port,
+                        SSLHandler.getInstance(this).makeSslAxolotl()
+                ); break;
+                case PREF_TYPE_WEBSOCKET: conn = new WebSocketConnection(
+                        P.host, P.port, P.wsPath, null
+                ); break;
+                case PREF_TYPE_WEBSOCKET_SSL: conn = new WebSocketConnection(
+                        P.host, P.port, P.wsPath,
+                        SSLHandler.getInstance(this).makeSslAxolotl()
+                ); break;
+                default: conn = new SimpleConnection(P.host, P.port, null); break;
             }
         } catch (Exception e) {
             kitty.error("connect(): exception while creating connection", e);
@@ -289,13 +300,13 @@ public class RelayService extends Service implements IObserver {
 
     private void changeState(EnumSet<STATE> state) {
         this.state = state;
-        this.staticState = state;
+        staticState = state;
         EventBus.getDefault().postSticky(new StateChangedEvent(state));
     }
 
     @WorkerThread @Cat private void hello() {
         NotificatorKt.addOrRemoveActionForCurrentNotifications(true);
-        ping.scheduleFirstPing();
+        if (P.pingEnabled) pingingPenguin.startPinging();
         BufferList.onServiceAuthenticated();
         SyncAlarmReceiver.start(this);
     }
@@ -304,7 +315,7 @@ public class RelayService extends Service implements IObserver {
     @AnyThread @Cat private void goodbye() {
         SyncAlarmReceiver.stop(this);
         BufferList.onServiceStopped();
-        ping.unschedulePing();
+        if (P.pingEnabled) pingingPenguin.stopPinging();
         P.saveStuff();
         NotificatorKt.addOrRemoveActionForCurrentNotifications(false);
     }
@@ -334,7 +345,7 @@ public class RelayService extends Service implements IObserver {
     @WorkerThread @Override public void onMessage(RelayMessage message) {
         kitty.trace("→ onMessage(%s)", message.getID());
         if (state.contains(STATE.STOPPED)) return;
-        ping.onMessage();
+        pingingPenguin.onMessage();
         RelayObject[] objects = message.getObjects() == null ? NULL : message.getObjects();
         String id = message.getID();
         for (RelayObject object : objects)

@@ -4,6 +4,7 @@ import android.os.Build;
 
 import com.ubergeek42.WeechatAndroid.R;
 import com.ubergeek42.WeechatAndroid.Weechat;
+import com.ubergeek42.WeechatAndroid.service.P;
 
 import java.util.Set;
 
@@ -62,6 +63,8 @@ public class Constants {
     final public static String PREF_LINE_INCREMENT_D = "300";
     final static public String PREF_SEARCH_LINE_INCREMENT = "line_number_to_request_when_starting_search";
     final static public String PREF_SEARCH_LINE_INCREMENT_D = "4097";
+    final static public String PREF_HANDLE_BUFFER_LINE_DATA_CHANGED = "handle_buffer_line_data_changed";
+    final static public Boolean PREF_HANDLE_BUFFER_LINE_DATA_CHANGED_D = true;
     final static public String PREF_RECONNECT = "reconnect";
     final public static boolean PREF_RECONNECT_D = true;
     final static public String PREF_BOOT_CONNECT = "boot_connect";
@@ -82,8 +85,12 @@ public class Constants {
 
     // buffer list
     public static final String PREF_BUFFERLIST_GROUP = "bufferlist_group";
-    public static final String PREF_SORT_BUFFERS = "sort_buffers";
-    final public static boolean PREF_SORT_BUFFERS_D = false;
+    public static final String PREF_SORT_BUFFER_LIST = "sort_buffer_list";
+    public static final String PREF_SORT_BUFFER_LIST_BY_NUMBER = "by_number";
+    public static final String PREF_SORT_BUFFER_LIST_BY_HOT_MESSAGES_THEN_BY_NUMBER = "by_hot_messages_then_by_number";
+    public static final String PREF_SORT_BUFFER_LIST_BY_HOT_MESSAGES_THEN_BY_OTHER_MESSAGES_THEN_BY_NUMBER = "by_hot_messages_then_by_other_messages_then_by_number";
+    final public static String PREF_SORT_BUFFER_LIST_D = PREF_SORT_BUFFER_LIST_BY_NUMBER;
+
     public static final String PREF_HIDE_HIDDEN_BUFFERS = "hide_hidden_buffers";
     final public static boolean PREF_HIDE_HIDDEN_BUFFERS_D = true;
     public static final String PREF_FILTER_NONHUMAN_BUFFERS = "filter_nonhuman_buffers";
@@ -123,8 +130,8 @@ public class Constants {
     final public static boolean PREF_SHOW_SEND_D = true;
     public final static String PREF_SHOW_TAB = "tabbtn_show";
     final public static boolean PREF_SHOW_TAB_D = true;
-    public final static String PREF_VOLUME_BTN_SIZE = "volumebtn_size";
-    final public static boolean PREF_VOLUME_BTN_SIZE_D = true;
+    public final static String PREF_VOLUME_ROLE = "buttons__volume";
+    final public static String PREF_VOLUME_ROLE_D = P.VolumeRole.ChangeTextSize.value;
 
     final public static String PREF_SHOW_PAPERCLIP = "buttons__show_paperclip";
     final public static boolean PREF_SHOW_PAPERCLIP_D = true;
@@ -256,5 +263,6 @@ public class Constants {
         final static public String PREF_SSH_KEY = "ssh_key"; final public static String PREF_SSH_KEY_D = null;
         final static public String PREF_SSH_KEY_PASSPHRASE = "ssh_key_passphrase"; final public static String PREF_SSH_KEY_PASSPHRASE_D = null;
         final static public String PREF_SSH_KNOWN_HOSTS = "ssh_known_hosts"; final public static String PREF_SSH_KNOWN_HOSTS_D = "";
+        final static public String PREF_VOLUME_BTN_SIZE = "volumebtn_size"; final public static boolean PREF_VOLUME_BTN_SIZE_D = true;
     }
 }

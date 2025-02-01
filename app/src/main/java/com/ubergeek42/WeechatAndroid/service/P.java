@@ -32,6 +32,7 @@ import com.ubergeek42.WeechatAndroid.relay.Buffer;
 import com.ubergeek42.WeechatAndroid.relay.BufferList;
 import com.ubergeek42.WeechatAndroid.upload.UploadConfigKt;
 import com.ubergeek42.WeechatAndroid.utils.Constants;
+import com.ubergeek42.WeechatAndroid.utils.History;
 import com.ubergeek42.WeechatAndroid.utils.MigratePreferences;
 import com.ubergeek42.WeechatAndroid.utils.ThemeFix;
 import com.ubergeek42.WeechatAndroid.utils.Utils;
@@ -53,8 +54,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-
-import javax.net.ssl.SSLSocketFactory;
 
 import static com.ubergeek42.WeechatAndroid.utils.Constants.*;
 
@@ -89,7 +88,7 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
     public static void storeThemeOrColorSchemeColors(Context context) {
         ColorScheme scheme = ColorScheme.get();
         TypedArray colors = context.obtainStyledAttributes(
-                new int[] {R.attr.colorPrimary, R.attr.colorPrimaryDark, R.attr.toolbarIconColor});
+                new int[] {androidx.appcompat.R.attr.colorPrimary, androidx.appcompat.R.attr.colorPrimaryDark, R.attr.toolbarIconColor});
         colorPrimary = scheme.colorPrimary != ColorScheme.NO_COLOR ?
                 scheme.colorPrimary : colors.getColor(0, ColorScheme.NO_COLOR);
         colorPrimaryDark = scheme.colorPrimaryDark != ColorScheme.NO_COLOR ?
@@ -106,7 +105,7 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
     final public static float _4dp = 4 * _1dp;
     final public static float _200dp = 200 * _1dp;
 
-    public static boolean sortBuffers;
+    public static String sortBufferList;
     public static boolean filterBuffers;
     public static boolean hideHiddenBuffers;
     public static boolean optimizeTraffic;
@@ -125,7 +124,28 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
     public static boolean notificationVibrate;
     public static String notificationSound;
 
-    public static boolean showSend, showTab, showPaperclip, hotlistSync, volumeBtnSize;
+    public static boolean showSend, showTab, showPaperclip, hotlistSync;
+
+    public enum VolumeRole {
+        DoNothing("none"),
+        ChangeTextSize("change_text_size"),
+        NavigateInputHistory("navigate_input_history");
+
+        public final String value;
+
+        VolumeRole(String value) {
+            this.value = value;
+        }
+
+        static VolumeRole fromString(String value) {
+            for (VolumeRole role : VolumeRole.values()) {
+                if (role.value.equals(value)) return role;
+            }
+            // Should never be reached.
+            return VolumeRole.ChangeTextSize;
+        }
+    }
+    public static VolumeRole volumeRole;
 
     public static boolean showBufferFilter;
 
@@ -138,7 +158,7 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     @MainThread private static void loadUIPreferences() {
         // buffer list preferences
-        sortBuffers = p.getBoolean(PREF_SORT_BUFFERS, PREF_SORT_BUFFERS_D);
+        sortBufferList = p.getString(PREF_SORT_BUFFER_LIST, PREF_SORT_BUFFER_LIST_D);
         filterBuffers = p.getBoolean(PREF_FILTER_NONHUMAN_BUFFERS, PREF_FILTER_NONHUMAN_BUFFERS_D);
         hideHiddenBuffers = p.getBoolean(PREF_HIDE_HIDDEN_BUFFERS, PREF_HIDE_HIDDEN_BUFFERS_D);
         optimizeTraffic = p.getBoolean(PREF_OPTIMIZE_TRAFFIC, PREF_OPTIMIZE_TRAFFIC_D);  // okay this is out of sync with onChanged stuff—used for the bell icon
@@ -169,7 +189,7 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
         showTab = p.getBoolean(PREF_SHOW_TAB, PREF_SHOW_TAB_D);
         showPaperclip = p.getBoolean(PREF_SHOW_PAPERCLIP, PREF_SHOW_PAPERCLIP_D);
         hotlistSync = p.getBoolean(PREF_HOTLIST_SYNC, PREF_HOTLIST_SYNC_D);
-        volumeBtnSize = p.getBoolean(PREF_VOLUME_BTN_SIZE, PREF_VOLUME_BTN_SIZE_D);
+        volumeRole = VolumeRole.fromString(p.getString(PREF_VOLUME_ROLE, PREF_VOLUME_ROLE_D));
 
         // buffer list filter
         showBufferFilter = p.getBoolean(PREF_SHOW_BUFFER_FILTER, PREF_SHOW_BUFFER_FILTER_D);
@@ -220,7 +240,6 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
     static public int port;
     static public HandshakeMethod handshakeMethod;
     static int sshPort;
-    static SSLSocketFactory sslSocketFactory;
     static boolean reconnect;
     static public boolean pinRequired;
 
@@ -228,6 +247,7 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
     static long pingIdleTime, pingTimeout;
     public static int lineIncrement;
     public static int searchLineIncrement;
+    public static boolean handleBufferLineDataChanged;
 
     static String printableHost;
     static boolean connectionSurelyPossibleWithCurrentPreferences;
@@ -256,6 +276,7 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
 
         lineIncrement = Integer.parseInt(getString(PREF_LINE_INCREMENT, PREF_LINE_INCREMENT_D));
         searchLineIncrement = Integer.parseInt(getString(PREF_SEARCH_LINE_INCREMENT, PREF_SEARCH_LINE_INCREMENT_D));
+        handleBufferLineDataChanged = p.getBoolean(PREF_HANDLE_BUFFER_LINE_DATA_CHANGED, PREF_HANDLE_BUFFER_LINE_DATA_CHANGED_D);
 
         reconnect = p.getBoolean(PREF_RECONNECT, PREF_RECONNECT_D);
         optimizeTraffic = p.getBoolean(PREF_OPTIMIZE_TRAFFIC, PREF_OPTIMIZE_TRAFFIC_D);
@@ -263,12 +284,6 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
         pingEnabled = p.getBoolean(PREF_PING_ENABLED, PREF_PING_ENABLED_D);
         pingIdleTime = Integer.parseInt(getString(PREF_PING_IDLE, PREF_PING_IDLE_D)) * 1000;
         pingTimeout = Integer.parseInt(getString(PREF_PING_TIMEOUT, PREF_PING_TIMEOUT_D)) * 1000;
-
-        if (Utils.isAnyOf(connectionType, PREF_TYPE_SSL, PREF_TYPE_WEBSOCKET_SSL)) {
-            sslSocketFactory = SSLHandler.getInstance(context).getSSLSocketFactory();
-        } else {
-            sslSocketFactory = null;
-        }
 
         printableHost = connectionType.equals(PREF_TYPE_SSH) ? sshHost + "/" + host : host;
         connectionSurelyPossibleWithCurrentPreferences = false;     // and don't call me Shirley
@@ -316,7 +331,7 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
     @MainThread @Override @CatD public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key) {
             // buffer list preferences
-            case PREF_SORT_BUFFERS: sortBuffers = p.getBoolean(key, PREF_SORT_BUFFERS_D); break;
+            case PREF_SORT_BUFFER_LIST: sortBufferList = p.getString(key, PREF_SORT_BUFFER_LIST_D); break;
             case PREF_FILTER_NONHUMAN_BUFFERS: filterBuffers = p.getBoolean(key, PREF_FILTER_NONHUMAN_BUFFERS_D); break;
             case PREF_HIDE_HIDDEN_BUFFERS: hideHiddenBuffers = p.getBoolean(key, PREF_HIDE_HIDDEN_BUFFERS_D); break;
             case PREF_AUTO_HIDE_ACTIONBAR: autoHideActionbar = p.getBoolean(key, PREF_AUTO_HIDE_ACTIONBAR_D); break;
@@ -374,7 +389,7 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
             case PREF_SHOW_TAB: showTab = p.getBoolean(key, PREF_SHOW_TAB_D); break;
             case PREF_SHOW_PAPERCLIP: showPaperclip = p.getBoolean(key, PREF_SHOW_PAPERCLIP_D); break;
             case PREF_HOTLIST_SYNC: hotlistSync = p.getBoolean(key, PREF_HOTLIST_SYNC_D); break;
-            case PREF_VOLUME_BTN_SIZE: volumeBtnSize = p.getBoolean(key, PREF_VOLUME_BTN_SIZE_D); break;
+            case PREF_VOLUME_ROLE: volumeRole = VolumeRole.fromString(p.getString(PREF_VOLUME_ROLE, PREF_VOLUME_ROLE_D)); break;
 
             // buffer list fragment
             case PREF_SHOW_BUFFER_FILTER: showBufferFilter = p.getBoolean(key, PREF_SHOW_BUFFER_FILTER_D); break;
@@ -445,11 +460,11 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     // protocol must be changed each time anything that uses the following function changes
     // needed to make sure nothing crashes if we cannot restore the data
-    private static final int PROTOCOL_ID = 18;
+    private static final int PROTOCOL_ID = 19;
 
     @AnyThread @Cat public static void saveStuff() {
         for (Buffer buffer : BufferList.buffers) saveLastReadLine(buffer);
-        String data = Utils.serialize(new Object[]{openBuffers, bufferToLastReadLine, sentMessages});
+        String data = Utils.serialize(new Object[]{openBuffers, bufferToLastReadLine, sentMessages, history});
         p.edit().putString(PREF_DATA, data).putInt(PREF_PROTOCOL_ID, PROTOCOL_ID).apply();
     }
 
@@ -462,6 +477,7 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
         if (array[0] instanceof LinkedHashSet) openBuffers = (LinkedHashSet<Long>) array[0];
         if (array[1] instanceof LinkedHashMap) bufferToLastReadLine = (LinkedHashMap<Long, BufferHotData>) array[1];
         if (array[2] instanceof LinkedList) sentMessages = (LinkedList<String>) array[2];
+        if (array[3] instanceof History) history = (History) array[3];
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -532,6 +548,12 @@ public class P implements SharedPreferences.OnSharedPreferenceChangeListener{
         if (sentMessages.size() > 40)
             sentMessages.pop();
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////// input history
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static History history = new History();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
